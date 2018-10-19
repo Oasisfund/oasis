@@ -59,7 +59,7 @@ contract Oasis {
 
             // Cleanup deposits array a bit
             for (uint i = 0; i < user.deposits.length; i++) {
-                if (now > user.deposits[i].time.add(MAX_DEPOSIT_TIME)) { // solium-disable-line security/no-block-members
+                if (now >= user.deposits[i].time.add(MAX_DEPOSIT_TIME)) { // solium-disable-line security/no-block-members
                     user.deposits[i] = user.deposits[user.deposits.length - 1];
                     user.deposits.length -= 1;
                     i -= 1;
@@ -135,9 +135,6 @@ contract Oasis {
             uint256 duration = now.sub(user.lastPayment); // solium-disable-line security/no-block-members
             if (howOld > MAX_DEPOSIT_TIME) {
                 uint256 overtime = howOld.sub(MAX_DEPOSIT_TIME);
-                if (duration <= overtime) {
-                    continue;
-                }
                 duration = duration.sub(overtime);
             }
 
