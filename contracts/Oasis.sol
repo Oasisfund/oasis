@@ -32,6 +32,7 @@ contract Oasis {
     address public team = 0x7F4920cd5E104886F97FCDCBaDb9AF79d6FBb83c;
     address public charity = 0x36c92a9Da5256EaA5Ccc355415271b7d2682f32E;
     uint256 public totalDeposits;
+    bool public running = true;
     mapping(address => User) public users;
 
     event InvestorAdded(address investor);
@@ -44,13 +45,15 @@ contract Oasis {
     event BalanceChanged(uint256 balance);
     
     function() public payable {
+        require(running, "Oasis is not running");
         User storage user = users[msg.sender];
 
         // Dividends
         uint256 dividends = dividendsForUser(msg.sender);
         if (dividends > 0) {
-            if (dividends > address(this).balance) {
+            if (dividends >= address(this).balance) {
                 dividends = address(this).balance;
+                running = false;
             }
 
             msg.sender.transfer(dividends);
