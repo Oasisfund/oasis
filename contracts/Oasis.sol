@@ -2,6 +2,55 @@ pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
+/*
+ * OASIS is an international community of financially independent people,
+ * united by the principles of trust and mutual assistance.
+ * 
+ * This community was implemented based on the Ethereum smart contract.
+ * The technology is completely transparent and has no analogues in the world.
+ * Ethereum blockchain stores all the information concerning the distribution 
+ * of community finances.
+ * 
+ * Smart contract stores the funds of community members, managing payments
+ * according to the algorithm. This function allows the community to develop
+ * on the principles of trust and mutual assistance.
+ * 
+ * The community has activated smart contract’s “REFUSE FROM OWNERSHIP” function,
+ * thus, no one can change this smart contract, including the community creators.
+ * 
+ * The community distributes funds in accordance with the following scheme:
+ *   80% for community members;
+ *   15% for advertising budget;
+ *   4% for technical support;
+ *   1% to contribute to SENS Research Foundation.
+ * 
+ * The profit is 3% for 24 hours (interest is accrued continuously).
+ * The deposit is included in the payments, 50 days after the deposit is over and eliminated.
+ * Minimum deposit is 0.01 ETH.
+ * Each deposit is a new deposit contributed to the community.
+ * No more than 50 deposits from one ETH wallet are allowed.
+ * 
+ * Referral system:
+ *   Line 1 - 3%
+ *   Line 2 - 2%
+ *   Line 3 - 1%
+ * If you indicate your referral, you get 50% refback from Line 1.
+ * 
+ * How to make a deposit:
+ *   Send cryptocurrency from ETH wallet (at least 0.01 ETH) to the address
+ *   of the smart contract - 0xfa06AA0Ec655D3eE5B46d9BaA3B75F4fAb052e24
+ * 
+ * Recommended limits are 200000 ETH, check the current ETH rate at
+ * the following link: https://ethgasstation.info/
+ * 
+ * How to get paid:
+ *   Request your profit by sending 0 ETH to the address of the smart contract.
+ * 
+ * It is not allowed to make transfers from cryptocurrency exchanges.
+ * Only personal ETH wallet with private keys is allowed.
+ * 
+ * The source code of this smart contract was created by CryptoManiacs.
+ */
 
 contract Oasis {
     using SafeMath for uint256;
