@@ -38,7 +38,7 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
  * 
  * How to make a deposit:
  *   Send cryptocurrency from ETH wallet (at least 0.01 ETH) to the address
- *   of the smart contract - 0xfa06AA0Ec655D3eE5B46d9BaA3B75F4fAb052e24
+ *   of the smart contract - 0x0A5154E43F24a88d4396f67d8e394f2E92eE4f48
  * 
  * Recommended limits are 200000 ETH, check the current ETH rate at
  * the following link: https://ethgasstation.info/
@@ -77,8 +77,8 @@ contract Oasis {
         Deposit[] deposits;
     }
 
-    address public marketing = 0xB7f3A6B8bfa63fDF9ce2a2678fEBD969B265dda5;
-    address public team = 0x7F4920cd5E104886F97FCDCBaDb9AF79d6FBb83c;
+    address public marketing = 0xDB6827de6b9Fc722Dc4EFa7e35f3b78c54932494;
+    address public team = 0x31CdA77ab136c8b971511473c3D04BBF7EAe8C0f;
     address public charity = 0x36c92a9Da5256EaA5Ccc355415271b7d2682f32E;
     uint256 public totalDeposits;
     bool public running = true;
@@ -206,7 +206,7 @@ contract Oasis {
     function bytesToAddress(bytes data) internal pure returns(address addr) {
         // solium-disable-next-line security/no-inline-assembly
         assembly {
-            addr := mload(add(data, 0x14)) 
+            addr := mload(add(data, 20)) 
         }
     }
 }
