@@ -59,8 +59,9 @@ contract Oasis {
     uint256 constant public DAILY_INTEREST = 300;                       // 3%
     uint256 constant public MARKETING_FEE = 1500;                       // 15%
     uint256 constant public TEAM_FEE = 400;                             // 4%
-    uint256 constant public CHARITY_FEE = 100;                             // 1%
+    uint256 constant public CHARITY_FEE = 100;                          // 1%
     uint256 constant public MAX_DEPOSIT_TIME = 50 days;                 // 150%
+    uint256 constant public REFERRER_ACTIVATION_PERIOD = 1 days;
     uint256 constant public MAX_USER_DEPOSITS_COUNT = 50;
     uint256 constant public REFBACK_PERCENT = 150;                      // 1.5%
     uint256[] /*constant*/ public referralPercents = [150, 200, 100];   // 1.5%, 2%, 1%
@@ -86,8 +87,8 @@ contract Oasis {
 
     event InvestorAdded(address indexed investor);
     event ReferrerAdded(address indexed investor, address indexed referrer);
-    event DepositAdded(address indexed investor, uint256 depositsCount, uint256 amount);
-    event DividendPayed(address indexed investor, uint256 dividend);
+    event DepositAdded(address indexed investor, uint256 indexed depositsCount, uint256 amount);
+    event DividendPayed(address indexed investor, uint256 indexed dividend);
     event ReferrerPayed(address indexed investor, address indexed referrer, uint256 amount, uint256 indexed level);
     event FeePayed(address indexed investor, uint256 amount);
     event TotalDepositsChanged(uint256 totalDeposits);
@@ -142,7 +143,7 @@ contract Oasis {
             // Add referral if possible
             if (user.referrer == address(0) && msg.data.length == 20) {
                 address referrer = bytesToAddress(msg.data);
-                if (referrer != address(0) && users[referrer].firstTime > 0 && now >= users[referrer].firstTime.add(1 days)) { // solium-disable-line security/no-block-members
+                if (referrer != address(0) && users[referrer].firstTime > 0 && now >= users[referrer].firstTime.add(REFERRER_ACTIVATION_PERIOD)) { // solium-disable-line security/no-block-members
                     user.referrer = referrer;
                     msg.sender.transfer(msg.value.mul(REFBACK_PERCENT).div(ONE_HUNDRED_PERCENTS));
                     emit ReferrerAdded(msg.sender, referrer);
