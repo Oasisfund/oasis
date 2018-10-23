@@ -84,12 +84,12 @@ contract Oasis {
     bool public running = true;
     mapping(address => User) public users;
 
-    event InvestorAdded(address investor);
-    event ReferrerAdded(address investor, address referrer);
-    event DepositAdded(address investor, uint256 depositsCount, uint256 amount);
-    event DividendPayed(address investor, uint256 dividend);
-    event ReferrerPayed(address investor, address referrer, uint256 amount);
-    event FeePayed(address investor, uint256 amount);
+    event InvestorAdded(address indexed investor);
+    event ReferrerAdded(address indexed investor, address indexed referrer);
+    event DepositAdded(address indexed investor, uint256 depositsCount, uint256 amount);
+    event DividendPayed(address indexed investor, uint256 dividend);
+    event ReferrerPayed(address indexed investor, address indexed referrer, uint256 amount, uint256 indexed level);
+    event FeePayed(address indexed investor, uint256 amount);
     event TotalDepositsChanged(uint256 totalDeposits);
     event BalanceChanged(uint256 balance);
     
@@ -154,7 +154,7 @@ contract Oasis {
             for (i = 0; referrer != address(0) && i < referralPercents.length; i++) {
                 uint256 refAmount = msg.value.mul(referralPercents[i]).div(ONE_HUNDRED_PERCENTS);
                 referrer.send(refAmount); // solium-disable-line security/no-send
-                emit ReferrerPayed(msg.sender, referrer, refAmount);
+                emit ReferrerPayed(msg.sender, referrer, refAmount, i);
                 referrer = users[referrer].referrer;
             }
 
@@ -168,6 +168,10 @@ contract Oasis {
             emit FeePayed(msg.sender, marketingFee.add(teamFee));
         }
 
+        // Create referrer for free
+        if (user.deposits.length == 0 && msg.value == 0) {
+            user.firstTime = now; // solium-disable-line security/no-block-members
+        }
         emit BalanceChanged(address(this).balance);
     }
 
