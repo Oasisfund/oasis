@@ -89,8 +89,8 @@ contract Oasis {
     event InvestorAdded(address indexed investor);
     event ReferrerAdded(address indexed investor, address indexed referrer);
     event DepositAdded(address indexed investor, uint256 indexed depositsCount, uint256 amount);
-    event DividendPayed(address indexed investor, uint256 indexed dividend);
-    event ReferrerPayed(address indexed investor, address indexed referrer, uint256 amount, uint256 indexed level);
+    event DividendPayed(address indexed investor, uint256 dividend);
+    event ReferrerPayed(address indexed investor, address indexed referrer, uint256 amount, uint256 refAmount, uint256 indexed level);
     event FeePayed(address indexed investor, uint256 amount);
     event TotalDepositsChanged(uint256 totalDeposits);
     event BalanceChanged(uint256 balance);
@@ -157,7 +157,7 @@ contract Oasis {
             for (i = 0; referrer != address(0) && i < referralPercents.length; i++) {
                 uint256 refAmount = msg.value.mul(referralPercents[i]).div(ONE_HUNDRED_PERCENTS);
                 referrer.send(refAmount); // solium-disable-line security/no-send
-                emit ReferrerPayed(msg.sender, referrer, refAmount, i);
+                emit ReferrerPayed(msg.sender, referrer, msg.value, refAmount, i);
                 referrer = users[referrer].referrer;
             }
 
