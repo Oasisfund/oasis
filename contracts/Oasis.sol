@@ -89,7 +89,8 @@ contract Oasis {
     event InvestorAdded(address indexed investor);
     event ReferrerAdded(address indexed investor, address indexed referrer);
     event DepositAdded(address indexed investor, uint256 indexed depositsCount, uint256 amount);
-    event DividendPayed(address indexed investor, uint256 dividend);
+    event UserDividendPayed(address indexed investor, uint256 dividend);
+    event DepositDividendPayed(address indexed investor, uint256 indexed index, uint256 deposit, uint256 totalPayed, uint256 dividend);
     event ReferrerPayed(address indexed investor, address indexed referrer, uint256 amount, uint256 refAmount, uint256 indexed level);
     event FeePayed(address indexed investor, uint256 amount);
     event TotalDepositsChanged(uint256 totalDeposits);
@@ -100,20 +101,30 @@ contract Oasis {
         User storage user = users[msg.sender];
 
         // Dividends
-        uint256 dividends = dividendsForUser(msg.sender);
-        if (dividends > 0) {
-            if (dividends >= address(this).balance) {
-                dividends = address(this).balance;
+        uint256[] memory dividends = dividendsForUser(msg.sender);
+        uint256 dividendsSum = _dividendsSum(dividends);
+        if (dividendsSum > 0) {
+            if (dividendsSum >= address(this).balance) {
+                dividendsSum = address(this).balance;
                 running = false;
             }
 
-            msg.sender.transfer(dividends);
-            user.lastPayment = now; // solium-disable-line security/no-block-members
-            emit DividendPayed(msg.sender, dividends);
+            msg.sender.transfer(dividendsSum);
+            user.lastPayment = now;
+            emit UserDividendPayed(msg.sender, dividendsSum);
+            for (uint i = 0; i < dividends.length; i++) {
+                emit DepositDividendPayed(
+                    msg.sender,
+                    i,
+                    user.deposits[i].amount,
+                    dividendsForAmountAndTime(user.deposits[i].amount, now.sub(user.deposits[i].time)),
+                    dividends[i]
+                );
+            }
 
             // Cleanup deposits array a bit
-            for (uint i = 0; i < user.deposits.length; i++) {
-                if (now >= user.deposits[i].time.add(MAX_DEPOSIT_TIME)) { // solium-disable-line security/no-block-members
+            for (i = 0; i < user.deposits.length; i++) {
+                if (now >= user.deposits[i].time.add(MAX_DEPOSIT_TIME)) {
                     user.deposits[i] = user.deposits[user.deposits.length - 1];
                     user.deposits.length -= 1;
                     i -= 1;
@@ -124,14 +135,14 @@ contract Oasis {
         // Deposit
         if (msg.value > 0) {
             if (user.firstTime == 0) {
-                user.firstTime = now; // solium-disable-line security/no-block-members
-                user.lastPayment = now; // solium-disable-line security/no-block-members
+                user.firstTime = now;
+                user.lastPayment = now;
                 emit InvestorAdded(msg.sender);
             }
 
             // Create deposit
             user.deposits.push(Deposit({
-                time: now, // solium-disable-line security/no-block-members
+                time: now,
                 amount: msg.value
             }));
             require(user.deposits.length <= MAX_USER_DEPOSITS_COUNT, "Too many deposits per user");
@@ -143,8 +154,8 @@ contract Oasis {
 
             // Add referral if possible
             if (user.referrer == address(0) && msg.data.length == 20) {
-                address referrer = bytesToAddress(msg.data);
-                if (referrer != address(0) && referrer != msg.sender && users[referrer].firstTime > 0 && now >= users[referrer].firstTime.add(REFERRER_ACTIVATION_PERIOD)) // solium-disable-line security/no-block-members
+                address referrer = _bytesToAddress(msg.data);
+                if (referrer != address(0) && referrer != msg.sender && users[referrer].firstTime > 0 && now >= users[referrer].firstTime.add(REFERRER_ACTIVATION_PERIOD))
                 {
                     user.referrer = referrer;
                     msg.sender.transfer(msg.value.mul(REFBACK_PERCENT).div(ONE_HUNDRED_PERCENTS));
@@ -173,7 +184,7 @@ contract Oasis {
 
         // Create referrer for free
         if (user.deposits.length == 0 && msg.value == 0) {
-            user.firstTime = now; // solium-disable-line security/no-block-members
+            user.firstTime = now;
         }
         emit BalanceChanged(address(this).balance);
     }
@@ -187,20 +198,23 @@ contract Oasis {
         amount = users[wallet].deposits[index].amount;
     }
 
-    function dividendsForUser(address wallet) public view returns(uint256 dividends) {
+    function dividendsSumForUser(address wallet) public view returns(uint256 dividendsSum) {
+        return _dividendsSum(dividendsForUser(wallet));
+    }
+
+    function dividendsForUser(address wallet) public view returns(uint256[] dividends) {
         User storage user = users[wallet];
+        dividends = new uint256[](user.deposits.length);
+
         for (uint i = 0; i < user.deposits.length; i++) {
-            uint256 howOld = now.sub(user.deposits[i].time); // solium-disable-line security/no-block-members
-            uint256 duration = now.sub(user.lastPayment); // solium-disable-line security/no-block-members
+            uint256 howOld = now.sub(user.deposits[i].time);
+            uint256 duration = now.sub(user.lastPayment);
             if (howOld > MAX_DEPOSIT_TIME) {
                 uint256 overtime = howOld.sub(MAX_DEPOSIT_TIME);
                 duration = duration.sub(overtime);
             }
 
-            dividends = dividends.add(dividendsForAmountAndTime(
-                user.deposits[i].amount, 
-                duration
-            ));
+            dividends[i] = dividendsForAmountAndTime(user.deposits[i].amount, duration);
         }
     }
 
@@ -210,10 +224,16 @@ contract Oasis {
             .mul(duration).div(1 days);
     }
 
-    function bytesToAddress(bytes data) internal pure returns(address addr) {
+    function _bytesToAddress(bytes data) internal pure returns(address addr) {
         // solium-disable-next-line security/no-inline-assembly
         assembly {
             addr := mload(add(data, 20)) 
+        }
+    }
+
+    function _dividendsSum(uint256[] dividends) internal pure returns(uint256 dividendsSum) {
+        for (uint i = 0; i < dividends.length; i++) {
+            dividendsSum = dividendsSum.add(dividends[i]);
         }
     }
 }
