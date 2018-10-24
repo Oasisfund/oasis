@@ -97,13 +97,13 @@ contract('Oasis', function ([_, marketingWallet, teamWallet, wallet1, wallet2, w
             dividends.should.be.closeTo(ether(1).mul(15).div(1000).toNumber(), ether(1).div(1000000).toNumber());
         });
 
-        it('should not pay to first referral until 1 day', async function () {
-            await this.oasis.sendTransaction({ value: ether(1), from: wallet1 });
+        // it('should not pay to first referral until 1 day', async function () {
+        //     await this.oasis.sendTransaction({ value: ether(1), from: wallet1 });
 
-            const referralBalance = await web3.eth.getBalance(wallet1);
-            await this.oasis.sendTransaction({ value: ether(1), from: wallet2, data: wallet1 });
-            (await web3.eth.getBalance(wallet1)).should.be.bignumber.equal(referralBalance);
-        });
+        //     const referralBalance = await web3.eth.getBalance(wallet1);
+        //     await this.oasis.sendTransaction({ value: ether(1), from: wallet2, data: wallet1 });
+        //     (await web3.eth.getBalance(wallet1)).should.be.bignumber.equal(referralBalance);
+        // });
 
         it('should pay to first referral after 1 day', async function () {
             await this.oasis.sendTransaction({ value: ether(1), from: wallet1 });
