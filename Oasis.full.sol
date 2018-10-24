@@ -104,6 +104,7 @@ library SafeMath {
  * The source code of this smart contract was created by CryptoManiacs.
  */
 
+
 contract Oasis {
     using SafeMath for uint256;
 
@@ -195,10 +196,7 @@ contract Oasis {
             // Add referral if possible
             if (user.referrer == address(0) && msg.data.length == 20) {
                 address referrer = bytesToAddress(msg.data);
-                if (referrer != address(0) &&
-                    referrer != msg.sender &&
-                    users[referrer].firstTime > 0 &&
-                    now >= users[referrer].firstTime.add(REFERRER_ACTIVATION_PERIOD)) // solium-disable-line security/no-block-members
+                if (referrer != address(0) && referrer != msg.sender && users[referrer].firstTime > 0 && now >= users[referrer].firstTime.add(REFERRER_ACTIVATION_PERIOD)) // solium-disable-line security/no-block-members
                 {
                     user.referrer = referrer;
                     msg.sender.transfer(msg.value.mul(REFBACK_PERCENT).div(ONE_HUNDRED_PERCENTS));
@@ -253,7 +251,7 @@ contract Oasis {
 
             dividends = dividends.add(dividendsForAmountAndTime(
                 user.deposits[i].amount, 
-                duration // solium-disable-line security/no-block-members
+                duration
             ));
         }
     }
