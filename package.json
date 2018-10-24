@@ -26,7 +26,7 @@
   "scripts": {
     "test": "scripts/test.sh",
     "coverage": "scripts/coverage.sh",
-    "dist": "truffle-flattener ./contracts/Oasis.sol",
+    "dist": "truffle-flattener ./contracts/Oasis.sol > Oasis.full.sol && solcjs --bin --abi --optimize Oasis.full.sol && rm Oasis_full_sol_SafeMath.bin Oasis_full_sol_SafeMath.abi && mv Oasis_full_sol_Oasis.bin Oasis.full.bin && mv Oasis_full_sol_Oasis.abi Oasis.full.abi",
     "lint:js": "eslint .",
     "lint:js:fix": "eslint . --fix",
     "lint:sol": "solium -d .",
