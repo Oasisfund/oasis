@@ -201,7 +201,7 @@ contract Oasis {
 
             dividends = dividends.add(dividendsForAmountAndTime(
                 user.deposits[i].amount, 
-                duration // solium-disable-line security/no-block-members
+                duration
             ));
         }
     }

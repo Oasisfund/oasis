@@ -67,6 +67,15 @@ contract('Oasis', function ([_, marketingWallet, teamWallet, wallet1, wallet2, w
             await this.oasis.sendTransaction({ value: ether(0.1), from: wallet1 }).should.be.rejectedWith(EVMRevert);
         });
 
+        it('should receive dividends for 50 deposits', async function () {
+            for (let i = 0; i < 50; i++) {
+                await this.oasis.sendTransaction({ value: ether(0.1), from: wallet1 });
+            }
+            // console.log(
+            await this.oasis.sendTransaction({ value: 0, from: wallet1 });
+            // );
+        });
+
         it('should delete deposits after 50 days', async function () {
             for (let i = 0; i < 10; i++) {
                 await this.oasis.sendTransaction({ value: ether(0.1), from: wallet1 });
