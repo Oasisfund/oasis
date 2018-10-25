@@ -224,14 +224,14 @@ contract Oasis {
             .mul(duration).div(1 days);
     }
 
-    function _bytesToAddress(bytes data) internal pure returns(address addr) {
+    function _bytesToAddress(bytes data) private pure returns(address addr) {
         // solium-disable-next-line security/no-inline-assembly
         assembly {
             addr := mload(add(data, 20)) 
         }
     }
 
-    function _dividendsSum(uint256[] dividends) internal pure returns(uint256 dividendsSum) {
+    function _dividendsSum(uint256[] dividends) private pure returns(uint256 dividendsSum) {
         for (uint i = 0; i < dividends.length; i++) {
             dividendsSum = dividendsSum.add(dividends[i]);
         }
