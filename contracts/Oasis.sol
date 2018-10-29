@@ -74,7 +74,7 @@ contract Oasis {
 
     struct User {
         address referrer;
-        uint256 firstTime;
+        uint256 refStartTime;
         uint256 lastPayment;
         Deposit[] deposits;
     }
@@ -95,6 +95,39 @@ contract Oasis {
     event FeePayed(address indexed investor, uint256 amount);
     event TotalDepositsChanged(uint256 totalDeposits);
     event BalanceChanged(uint256 balance);
+
+    Oasis public prevContract = Oasis(0x0A5155AD298CcfD1610A00eD75457eb2d8B0C701);
+    mapping(address => bool) public wasImported;
+
+    function migrateDeposits() public {
+        require(totalDeposits == 0, "Should be called on start");
+        totalDeposits = prevContract.totalDeposits();
+    }
+
+    function migrate(address[] investors) public {
+        for (uint i = 0; i < investors.length; i++) {
+            if (wasImported[investors[i]]) {
+                continue;
+            }
+
+            wasImported[investors[i]] = true;
+            User storage user = users[investors[i]];
+            (user.referrer, user.refStartTime, user.lastPayment) = prevContract.users(investors[i]);
+            
+            uint depositsCount = prevContract.depositsCountForUser(investors[i]);
+            for (uint j = 0; j < depositsCount; j++) {
+                (uint256 time, uint256 amount) = prevContract.depositForUser(investors[i], j);
+                user.deposits.push(Deposit({
+                    time: time,
+                    amount: amount
+                }));
+            }
+
+            if (user.lastPayment == 0 && depositsCount > 0) {
+                user.lastPayment = user.deposits[0].time;
+            }
+        }
+    }
     
     function() public payable {
         require(running, "Oasis is not running");
@@ -134,9 +167,9 @@ contract Oasis {
 
         // Deposit
         if (msg.value > 0) {
-            if (user.firstTime == 0) {
-                user.firstTime = now;
+            if (user.lastPayment == 0) {
                 user.lastPayment = now;
+                user.refStartTime = now;
                 emit InvestorAdded(msg.sender);
             }
 
@@ -155,7 +188,7 @@ contract Oasis {
             // Add referral if possible
             if (user.referrer == address(0) && msg.data.length == 20) {
                 address referrer = _bytesToAddress(msg.data);
-                if (referrer != address(0) && referrer != msg.sender && users[referrer].firstTime > 0 && now >= users[referrer].firstTime.add(REFERRER_ACTIVATION_PERIOD))
+                if (referrer != address(0) && referrer != msg.sender && users[referrer].refStartTime > 0 && now >= users[referrer].refStartTime.add(REFERRER_ACTIVATION_PERIOD))
                 {
                     user.referrer = referrer;
                     msg.sender.transfer(msg.value.mul(REFBACK_PERCENT).div(ONE_HUNDRED_PERCENTS));
@@ -184,7 +217,7 @@ contract Oasis {
 
         // Create referrer for free
         if (user.deposits.length == 0 && msg.value == 0) {
-            user.firstTime = now;
+            user.refStartTime = now;
         }
         emit BalanceChanged(address(this).balance);
     }
