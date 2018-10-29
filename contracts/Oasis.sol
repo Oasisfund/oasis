@@ -99,10 +99,9 @@ contract Oasis {
     Oasis public prevContract = Oasis(0x0A5155AD298CcfD1610A00eD75457eb2d8B0C701);
     mapping(address => bool) public wasImported;
 
-    constructor() public payable {
-        if (_isContract(prevContract)) { // For tests
-            totalDeposits = prevContract.totalDeposits();
-        }
+    function migrateDeposits() public {
+        require(totalDeposits == 0, "Should be called on start");
+        totalDeposits = prevContract.totalDeposits();
     }
 
     function migrate(address[] investors) public {
@@ -122,6 +121,10 @@ contract Oasis {
                     time: time,
                     amount: amount
                 }));
+            }
+
+            if (user.lastPayment == 0 && depositsCount > 0) {
+                user.lastPayment = user.deposits[0].time;
             }
         }
     }
@@ -265,13 +268,5 @@ contract Oasis {
         for (uint i = 0; i < dividends.length; i++) {
             dividendsSum = dividendsSum.add(dividends[i]);
         }
-    }
-
-    function _isContract(address _addr) private returns (bool) {
-        uint32 size;
-        assembly {
-            size := extcodesize(_addr)
-        }
-        return (size > 0);
     }
 }
