@@ -20,11 +20,17 @@ const payEther = async function (target, options) {
 
 const Oasis = artifacts.require('Oasis');
 
-contract('Oasis', function ([_, marketingWallet, teamWallet, wallet1, wallet2, wallet3, wallet4, wallet5]) {
+contract('Oasis', function ([_, wallet1, wallet2, wallet3, wallet4, wallet5]) {
+    // let marketingWallet;
+    // let teamWallet;
+
     beforeEach(async function () {
         await advanceBlock();
-        this.oasis = await Oasis.new(marketingWallet, teamWallet);
+        this.oasis = await Oasis.new();
         this.startTime = await time.latest();
+
+        // marketingWallet = await this.oasis.marketing.call();
+        // teamWallet = await this.oasis.team.call();
     });
 
     describe('deposit', function () {
